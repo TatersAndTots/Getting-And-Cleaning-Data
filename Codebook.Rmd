@@ -1,0 +1,43 @@
+---
+title: "Codebook"
+author: "Joseph Dinsmore"
+date: "May 19, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+This Codebook will detail changes to the data in the tidy dataset. To learn more about the original dataset, see [the offical UCI webpage on this data](http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones "Human Activity Recognition Using Smartphones Data Set") or the "activity_labels.txt", "features_info.txt", and the "README.txt" files in the **UCI HAR Dataset** folder
+
+##Structure of the dataset
+
+The tidy dataset is a 180 row, 81 column table incorporating data from the following files in the UCI HAR Dataset:
+
+* subject_test.txt
+* x_test.txt
+* y_test.txt
+* subject_train.txt
+* x_train.txt
+* y_train.txt
+* features.txt
+
+There are two ID variables and 78 measurements:
+
+* **Subject: 1-30, Indicates which individual was observed in each row
+
+* **Activity** - A factor variable indicating which activity was done during each observation. The possible values are:
+  * Walking
+  * Walking upstairs
+  * Walking downstairs
+  * Sitting
+  * Standing
+  * Laying
+  
+*The remaining columns each represent a certain measurement, either from an accelerometer or a gyroscope, in the 3 dimensions x, y, and z. For further info on the data, please see the "features_info.txt" file in the UCI HAR Dataset folder in this repo.
+
+Please note that this dataset shows the mean value for each subject and each activity, as each subject did these activities multiple times. For the original data, see the **data** object in the "run_analysis.R" file also in this repo.
+          

@@ -1,0 +1,98 @@
+---
+title: "README"
+author: "Joseph Dinsmore"
+date: "May 13, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## README
+
+This document will catalog changes to the UCI Human Activity Recognition Using Smartphone data to prepare a single, tidy dataset. This document will only include changes. To learn more about the original dataset, please refer to the original UCI HAR data folder as well as at [the offical website housing this data](http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones "Human Activity Recognition Using Smartphones Data Set")
+
+##Contents
+In this repo you will find:
+
+* **UCI HAR Dataset** - A folder holding the data used to do all of this analysis. Futher information about the data can be found here in the README.txt, activity_labels.txt, and features_info.txt files
+
+* **README.txt** - This file explaining the general analysis and the changes to the data
+
+* **run_analysis.R** - The script that creates our tidy dataset
+
+* **tidy dataset.txt** - The tidy dataset in question, made from the UCI HAR data
+
+* **UCI HAR Data Codebook** - The Codebook explaining the structure of and the names in the tidy dataset
+
+###The Script
+The script included 6 steps:
+
+1. Read the data into the workspace, including all the x,y, and subject data in the test and train folders, plus the features.txt file
+```{r, eval=FALSE}
+setwd("~/Final Project")
+rm(list=ls())
+library(dplyr)
+
+subtest <- read.table("~/R_Coding/Mod3/Final Project/UCI HAR Dataset/test/subject_test.txt", header = FALSE)
+xtest <- read.table("~/R_Coding/Mod3/Final Project/UCI HAR Dataset/test/X_test.txt", header = FALSE)
+ytest <- read.table("~/R_Coding/Mod3/Final Project/UCI HAR Dataset/test/y_test.txt", header = FALSE)
+subtrain <- read.table("~/R_Coding/Mod3/Final Project/UCI HAR Dataset/train/subject_train.txt", header = FALSE)
+xtrain <- read.table("~/R_Coding/Mod3/Final Project/UCI HAR Dataset/train/X_train.txt", header = FALSE)
+ytrain <- read.table("~/R_Coding/Mod3/Final Project/UCI HAR Dataset/train/y_train.txt", header = FALSE)
+feat <- read.table("~/R_Coding/Mod3/Final Project/UCI HAR Dataset/features.txt", header = FALSE)
+
+```
+
+
+2. Create a vector of names representing all the columns in the x datasets showings means or standard deviations, cleaned up a bit to look better. I used grepl() and gsub() here, saved under the **drop** and **names** objects
+```{r, eval=FALSE}
+featmstd <- subset(feat, grepl("mean", feat$V2) | grepl("std", feat$V2))
+names <-as.character(featmstd[,2])
+names <- gsub("\\(\\)", "", names)
+names <- gsub("mean", "Mean", names)
+names <- gsub("std", "Std", names)
+drop <- featmstd$V1
+```
+
+
+3. Use bracket notation to take only the needed columns from the two x datasets, using **drop**.
+```{r, eval=FALSE}
+xtest2 <- xtest[drop]
+xtrain2 <- xtrain[drop]
+```
+
+
+4. Combine these two data frames with their respective data on the activities done and the subjects (in the y files and subject files respectively). We end up with two essentially complete data sets, one for the test data and one for the train data. cbind() was used here.I also add a "Set" column which denotes where each row came from, either the Test data or the Train data.
+```{r, eval=FALSE}
+test <- cbind(rep("Test", length(ytest$V1)),subtest, ytest, xtest2)
+train <- cbind(rep("Train", length(ytrain$V1)), subtrain, ytrain, xtrain2)
+names(test) <- c("Set", "Subject", "Activity", names)
+names(train) <- c("Set", "Subject", "Activity", names)
+```
+
+
+5. Finally, the test and train data are bound together by rows using rbind(). The Activity column is also coerced into a factor variable and the values are swapped from numbers to a description, ie "1" in the original data turns into "Walking" here.
+```{r, eval=FALSE}
+data <- rbind(test, train)
+data[,3] <- as.factor(data[,3])
+
+act <- function(x) {
+  if(x == 1) {x <- "Walking"}
+  else if(x == 2) {x <- "Walking Upstairs"}
+  else if(x == 3) {x <- "Walking Downstairs"}
+  else if(x == 4) {x <- "Sitting"}
+  else if(x == 5) {x <- "Standing"}
+  else if(x == 6) {x <- "Laying"}
+}
+
+data[,3] <- sapply(data[,3], act)
+```
+
+
+6. Lastly, I build the tidy dataset using dplyr() and the numcolwise() functions and write the data frame into a table
+```{r, eval=FALSE}
+data_tidy <- ddply(data, c("Subject","Activity"), numcolwise(mean))
+write.table(data_tidy, "tidy dataset.txt")
+```
